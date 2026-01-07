@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Jelajah Teman | X-Ceria</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="main-layout">
+      <aside>
+        <div
+          style="
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          "
+        >
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2395/2395796.png"
+            class="logo-icon bouncing-icon"
+            alt="Logo X-Ceria"
+          />
+          X-Ceria
+        </div>
+        <nav>
+          <a href="feed.html" class="menu-item">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2413/2413074.png"
+              class="menu-icon"
+            />
+            Beranda
+          </a>
+          <a href="search.html" class="menu-item">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2909/2909565.png"
+              class="menu-icon"
+            />
+            Jelajah
+          </a>
+          <a href="profile.html" class="menu-item">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"
+              class="menu-icon"
+            />
+            Profil
+          </a>
+        </nav>
+        <button
+          onclick="logout()"
+          class="btn"
+          style="
+            margin-top: 20px;
+            background: #ffb7b2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+          "
+        >
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/4034/4034229.png"
+            class="menu-icon"
+            style="width: 24px; height: 24px"
+          />
+          Keluar
+        </button>
+      </aside>
+
+      <main>
+        <div class="card" style="background: #a2d9ff">
+          <h2>Cari Teman Baru</h2>
+          <p>Temukan temanmu yang sudah terdaftar!</p>
+          <div style="display: flex; gap: 10px; margin-top: 15px">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Ketik nama teman..."
+            />
+            <button
+              onclick="searchUsers()"
+              class="btn btn-small"
+              style="background: white; width: 60px"
+            >
+              <i class="ri-search-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="resultsList">
+          <p style="text-align: center; color: #888; margin-top: 50px">
+            Hasil pencarian akan muncul di sini...
+          </p>
+        </div>
+      </main>
+
+      <aside>
+        <div class="saweria-widget">
+          <div class="trending-text">
+            <h3>Tips 🔥</h3>
+
+            <a href="#" class="trending-item"
+              >#Coba cari nama user yang sudah terdaftar saat register tadi</a
+            >
+
+            <small
+              style="
+                display: block;
+                margin-top: 15px;
+                font-size: 12px;
+                opacity: 0.7;
+              "
+            >
+            </small>
+          </div>
+
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/616/616408.png"
+            class="widget-mascot"
+            alt="Maskot"
+          />
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) window.location.href = "index.html";
+      function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "index.html";
+      }
+
+      // --- FUNGSI CARI USER ---
+      async function searchUsers() {
+        const query = document.getElementById("searchInput").value;
+        const list = document.getElementById("resultsList");
+
+        list.innerHTML = "Loading...";
+
+        // Panggil API Search (Kirim ID kita juga biar API tau status follow)
+        const res = await fetch(
+          `/api/users/search?q=${query}&my_id=${user.id}`
+        );
+        const result = await res.json();
+
+        list.innerHTML = "";
+        if (result.data.length === 0) {
+          list.innerHTML = "<p align='center'>Tidak ditemukan :(</p>";
+          return;
+        }
+
+        result.data.forEach((u) => {
+          // Tentukan gaya tombol (Kuning jika belum follow, Abu jika sudah)
+          let btnText = u.is_followed ? "Unfollow" : "Follow";
+          let btnColor = u.is_followed ? "#ccc" : "#f8c300";
+
+          list.innerHTML += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <div style="width:40px; height:40px; background:#f8c300; border-radius:50%; border:2px solid black; display:flex; justify-content:center; align-items:center; font-weight:bold;">
+                            ${u.username[0].toUpperCase()}
+                        </div>
+                        <div>
+                            <h4 style="margin:0;">${u.full_name}</h4>
+                            <small>@${u.username}</small>
+                        </div>
+                    </div>
+                    <button onclick="followUser(${
+                      u.id
+                    }, this)" class="btn btn-small" style="width:100px; background:${btnColor}">
+                        ${btnText}
+                    </button>
+                </div>`;
+        });
+      }
+
+      // --- FUNGSI FOLLOW / UNFOLLOW ---
+      async function followUser(targetId, btnElement) {
+        const res = await fetch("/api/users/follow", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ follower_id: user.id, followed_id: targetId }),
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Ubah tampilan tombol secara langsung tanpa refresh
+          if (data.action === "followed") {
+            btnElement.innerText = "Unfollow";
+            btnElement.style.background = "#ccc";
+          } else {
+            btnElement.innerText = "Follow";
+            btnElement.style.background = "#f8c300";
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

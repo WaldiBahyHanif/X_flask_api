@@ -1,0 +1,328 @@
+/* FONT GEMOY (Fredoka & Poppins) */
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Poppins:wght@400;600&display=swap");
+
+:root {
+  --yellow: #f8c300; /* Kuning Saweria */
+  --black: #2d2d2d; /* Hitam */
+  --white: #ffffff;
+  --bg: #fffbf2; /* Cream Background */
+  --border: 3px solid var(--black); /* Garis Tebal */
+  --shadow: 4px 4px 0px var(--black); /* Bayangan Keras */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  font-family: "Poppins", sans-serif;
+  color: var(--black);
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Fredoka", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* CONTAINER TENGAH */
+.container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* LAYOUT FEED (Kiri - Tengah - Kanan) */
+.main-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr 300px;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* KOTAK PUTIH TEBAL */
+.card {
+  background: var(--white);
+  border: var(--border);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* INPUT FIELD */
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  font-family: inherit;
+  background: #f9f9f9;
+}
+
+/* TOMBOL KUNING SAWERIA */
+.btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--yellow);
+  border: var(--border);
+  border-radius: 50px;
+  font-weight: 800;
+  font-family: "Fredoka", sans-serif;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: 0.1s;
+  display: inline-block;
+  text-align: center;
+}
+.btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+.btn-small {
+  width: auto;
+  padding: 8px 20px;
+  font-size: 14px;
+}
+
+/* SIDEBAR MENU */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: var(--white);
+  border: var(--border);
+  border-radius: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--black);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+.menu-item:hover,
+.menu-item.active {
+  background: var(--yellow);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow);
+}
+
+/* UTILS */
+.logo {
+  font-size: 40px;
+  color: var(--yellow);
+  -webkit-text-stroke: 1px black;
+}
+a {
+  color: var(--black);
+  font-weight: bold;
+}
+
+/* Tambahkan ini di style.css */
+
+/* Ukuran Ilustrasi Menu Samping */
+.menu-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain; /* Agar gambar tidak gepeng */
+}
+
+/* Ukuran Logo Atas */
+.logo-icon {
+  width: 40px;
+  height: 40px;
+}
+
+/* CSS untuk animasi mantul-mantul (bouncing) */
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px) scale(1.1, 0.9); /* Mantul ke atas dan sedikit memipih */
+  }
+  60% {
+    transform: translateY(-5px) scale(1.05, 0.95); /* Mantul sedikit ke atas */
+  }
+}
+
+/* Terapkan animasi ini pada kelas ikon Anda */
+.bouncing-icon {
+  display: inline-block; /* Pastikan elemen bisa ditransformasi */
+  animation: bounce 2s ease-in-out infinite; /* Animasi berjalan selama 2 detik, berulang terus menerus */
+}
+
+/* --- TAMBAHAN BARU DI style.css --- */
+
+/* 1. Mengatur Tinggi Video agar Rapi */
+.feed-video {
+  width: 100%;
+  max-height: 350px; /* Ini kuncinya! Membatasi tinggi maksimal */
+  object-fit: contain; /* Video akan pas di dalam kotak tanpa terpotong/gepeng */
+  background-color: #000; /* Latar belakang hitam untuk video vertical */
+  border-radius: 12px;
+  margin-top: 10px;
+  border: var(--border); /* Tetap pakai garis tebal ala tema kita */
+}
+
+/* 2. Mengatur Ilustrasi Kartun di Sidebar Kanan */
+.sidebar-mascot-container {
+  margin-top: 30px; /* Jarak dari kotak Trending */
+  text-align: center;
+  /* Kita tidak pakai kotak putih (.card) agar kartunnya terlihat menyatu dengan background */
+}
+
+.sidebar-mascot {
+  width: 80%; /* Agar tidak terlalu penuh */
+  max-width: 250px; /* Batas lebar maksimal */
+  height: auto;
+  filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.2)); /* Bayangan kartun */
+  /* Biar makin lucu, kita kasih animasi mantul pelan */
+  animation: bounce 4s infinite ease-in-out;
+}
+
+/* --- WIDGET GABUNGAN ALA SAWERIA --- */
+.saweria-widget {
+  background-color: #ffdf91; /* Warna Kuning-Oranye khas Saweria */
+  border: var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex; /* Agar teks dan gambar bersebelahan */
+  align-items: center;
+  justify-content: space-between;
+  min-height: 180px; /* Biar kotaknya agak tinggi */
+  position: relative;
+  overflow: hidden;
+}
+
+.trending-text {
+  flex: 1; /* Mengambil sisa ruang di kiri */
+  z-index: 2;
+}
+
+.trending-text h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: var(--black);
+}
+
+.trending-item {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+  color: #5d4037;
+  text-decoration: none;
+  border-bottom: 2px dashed rgba(0, 0, 0, 0.1);
+  padding-bottom: 4px;
+}
+
+/* Maskot Besar di Kanan */
+.widget-mascot {
+  width: 110px; /* Ukuran Besar */
+  height: 110px;
+  object-fit: contain;
+  transform: rotate(10deg); /* Miring dikit biar gaya */
+  filter: drop-shadow(3px 3px 0px rgba(0, 0, 0, 0.2));
+  animation: bounce 3s infinite ease-in-out; /* Tetap mantul */
+  flex-shrink: 0; /* Agar gambar tidak gepeng kalau teks panjang */
+}
+
+/* --- POPUP KOMENTAR (MODAL) --- */
+.modal-overlay {
+  display: none; /* Awalnya sembunyi */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Latar belakang gelap transparan */
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px); /* Efek blur keren */
+}
+
+.modal-box {
+  background: #fffbf2; /* Warna Cream */
+  width: 500px;
+  max-height: 80vh;
+  border-radius: 20px;
+  border: 3px solid #2d2d2d;
+  box-shadow: 10px 10px 0 #2d2d2d; /* Bayangan tebal */
+  display: flex;
+  flex-direction: column;
+  animation: bounce 0.3s; /* Animasi muncul */
+}
+
+.modal-header {
+  padding: 15px;
+  border-bottom: 2px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+}
+
+.modal-body {
+  padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 15px;
+  border-top: 2px solid #ccc;
+  background: #fff;
+  border-radius: 0 0 18px 18px;
+}
+
+/* --- TAMPILAN ITEM KOMENTAR --- */
+.comment-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 12px;
+}
+
+/* KOMENTAR BALASAN (Menjorok ke kanan) */
+.reply-item {
+  margin-left: 40px; /* Geser kanan */
+  background: #e3f2fd; /* Warna biru muda */
+  border-left: 4px solid #f8c300; /* Garis kuning di kiri */
+}
+
+.btn-reply {
+  font-size: 12px;
+  color: #f8c300;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 5px;
+  display: inline-block;
+}
+
+.btn-close {
+  background: #ff6b6b;
+  color: white;
+  border: 2px solid black;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+}

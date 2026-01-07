@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Beranda | X-Ceria</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="main-layout">
+      <aside>
+        <div
+          style="
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          "
+        >
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2395/2395796.png"
+            class="logo-icon bouncing-icon"
+            alt="Logo X-Ceria"
+          />
+          X-Ceria
+        </div>
+        <nav>
+          <a href="feed.html" class="menu-item">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2413/2413074.png"
+              class="menu-icon"
+            />
+            Beranda
+          </a>
+          <a href="search.html" class="menu-item">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2909/2909565.png"
+              class="menu-icon"
+            />
+            Jelajah
+          </a>
+          <a href="profile.html" class="menu-item">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"
+              class="menu-icon"
+            />
+            Profil
+          </a>
+        </nav>
+        <button
+          onclick="logout()"
+          class="btn"
+          style="
+            margin-top: 20px;
+            background: #ffb7b2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+          "
+        >
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/4034/4034229.png"
+            class="menu-icon"
+            style="width: 24px; height: 24px"
+          />
+          Keluar
+        </button>
+      </aside>
+
+      <main>
+        <div class="card">
+          <h3>Apa yang seru hari ini? ✨</h3>
+          <textarea id="content" placeholder="Ceritain dong..."></textarea>
+          <input type="file" id="fileInput" />
+          <button onclick="posting()" class="btn btn-small">
+            Kirim Cerita
+          </button>
+        </div>
+
+        <div id="feedList"></div>
+      </main>
+
+      <aside>
+        <div class="saweria-widget">
+          <div class="trending-text">
+            <h3>Trending 🔥</h3>
+
+            <a href="#" class="trending-item">#BelajarFlask</a>
+            <a href="#" class="trending-item">#pwp membuatmu gila</a>
+            <a href="#" class="trending-item">#CodingSeru</a>
+
+            <small
+              style="
+                display: block;
+                margin-top: 15px;
+                font-size: 12px;
+                opacity: 0.7;
+              "
+            >
+              yang lagi naik daun di X-Ceria
+            </small>
+          </div>
+
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/1864/1864514.png"
+            class="widget-mascot"
+            alt="Maskot"
+          />
+        </div>
+      </aside>
+    </div>
+
+    <div id="commentModal" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Komentar <span id="commentCount">0</span> 💬</h3>
+          <button onclick="closeModal()" class="btn-close">X</button>
+        </div>
+
+        <div id="modalList" class="modal-body"></div>
+
+        <div class="modal-footer">
+          <small
+            id="replyingToBadge"
+            style="
+              display: none;
+              color: #f8c300;
+              font-weight: bold;
+              margin-bottom: 5px;
+            "
+          >
+            Membalas...
+            <span onclick="cancelReply()" style="cursor: pointer; color: red"
+              >(Batal)</span
+            >
+          </small>
+
+          <div style="display: flex; gap: 10px">
+            <input
+              type="text"
+              id="commentInput"
+              placeholder="Tulis komentar..."
+              style="margin: 0"
+            />
+            <input type="hidden" id="activeTweetId" />
+            <input type="hidden" id="activeParentId" />
+            <button
+              onclick="sendComment()"
+              class="btn btn-small"
+              style="width: auto"
+            >
+              🚀
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) window.location.href = "index.html";
+
+      function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "index.html";
+      }
+      function isVideo(filename) {
+        return filename.match(/\.(mp4|mov|avi|wmv|flv|mkv)$/i);
+      }
+
+      // --- 1. LOAD FEED (DENGAN LOGIKA LIKE BARU) ---
+      async function loadFeed() {
+        // Kirim ID kita ke backend biar tau status like
+        const res = await fetch(`/api/tweets/?my_id=${user.id}`);
+        const result = await res.json();
+        const list = document.getElementById("feedList");
+        list.innerHTML = "";
+
+        result.data.forEach((t) => {
+          // Cek Media (Video/Gambar)
+          let mediaHtml = "";
+          if (t.image_url) {
+            mediaHtml = isVideo(t.image_url)
+              ? `<video controls class="feed-video"><source src="${t.image_url}"></video>`
+              : `<img src="${t.image_url}" style="width:100%; border-radius:10px; border:2px solid black; margin-top:10px;">`;
+          }
+
+          // LOGIKA WARNA HATI
+          // Jika is_liked = true, pakai hati merah. Jika tidak, hati kosong.
+          const heartIcon = t.is_liked ? "ri-heart-3-fill" : "ri-heart-3-line";
+          const heartColor = t.is_liked ? "color:#ff4757;" : "color:black;";
+
+          list.innerHTML += `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <div style="width:35px; height:35px; background:#f8c300; border-radius:50%; border:2px solid black; display:flex; justify-content:center; align-items:center;">
+                            <b>${t.username[0].toUpperCase()}</b>
+                        </div>
+                        <div>
+                            <b>${t.full_name}</b>
+                            <small style="color:#888;">@${t.username}</small>
+                        </div>
+                    </div>
+                    <small>${new Date(
+                      t.created_at
+                    ).toLocaleDateString()}</small>
+                </div>
+
+                <p style="margin-top:10px; font-size:16px;">${t.content}</p>
+                ${mediaHtml}
+
+                <div style="margin-top:15px; display:flex; gap:20px; border-top:2px dashed #eee; padding-top:10px;">
+                    <span onclick="toggleLike(${
+                      t.id
+                    })" style="cursor:pointer; font-size:18px; font-weight:bold; ${heartColor}">
+                        <i class="${heartIcon}" style="font-size:20px;"></i> ${
+            t.total_likes
+          }
+                    </span>
+                    
+                    <span onclick="openComments(${
+                      t.id
+                    })" style="cursor:pointer; font-size:18px; font-weight:bold;">
+                        <i class="ri-chat-3-line" style="font-size:20px;"></i> ${
+                          t.total_comments
+                        }
+                    </span>
+                </div>
+            </div>`;
+        });
+      }
+
+      // --- 2. LIKE POSTINGAN ---
+      async function toggleLike(tweetId) {
+        await fetch("/api/tweets/like", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id, tweet_id: tweetId }),
+        });
+        loadFeed(); // Refresh biar warnanya berubah
+      }
+
+      // --- 3. LOGIKA KOMENTAR ---
+
+      // Buka Popup
+      async function openComments(tweetId) {
+        document.getElementById("commentModal").style.display = "flex";
+        document.getElementById("activeTweetId").value = tweetId;
+        cancelReply();
+        loadComments(tweetId);
+      }
+
+      function closeModal() {
+        document.getElementById("commentModal").style.display = "none";
+        loadFeed(); // Update angka komentar di luar saat ditutup
+      }
+
+      // Ambil & Susun Komentar
+      async function loadComments(tweetId) {
+        const list = document.getElementById("modalList");
+        list.innerHTML = "Loading...";
+
+        const res = await fetch(`/api/comments/${tweetId}`);
+        const result = await res.json();
+
+        document.getElementById("commentCount").innerText = result.data.length;
+        list.innerHTML = "";
+
+        if (result.data.length === 0) {
+          list.innerHTML =
+            "<p align='center' style='color:#ccc'>Belum ada komentar.</p>";
+          return;
+        }
+
+        // FILTER: Pisahkan Induk dan Anak (Reply)
+        const parents = result.data.filter(
+          (c) => !c.parent_id || c.parent_id == 0
+        );
+
+        parents.forEach((parent) => {
+          // 1. Tampilkan Induk
+          list.innerHTML += renderHTML(parent, false);
+
+          // 2. Cari Anak-anaknya
+          const replies = result.data.filter((c) => c.parent_id === parent.id);
+          replies.forEach((reply) => {
+            // 3. Tampilkan Anak (Menjorok ke dalam)
+            list.innerHTML += renderHTML(reply, true);
+          });
+        });
+      }
+
+      function renderHTML(c, isReply) {
+        // Kalau Reply, kelas CSS-nya beda (reply-item)
+        const cssClass = isReply ? "comment-item reply-item" : "comment-item";
+
+        return `
+            <div class="${cssClass}">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>@${c.username}</strong>
+                    <small style="color:#888;">${new Date(
+                      c.created_at
+                    ).toLocaleDateString()}</small>
+                </div>
+                <p style="margin:5px 0;">${c.content}</p>
+                ${
+                  !isReply
+                    ? `<span class="btn-reply" onclick="setReply(${c.id}, '@${c.username}')">↪ Balas</span>`
+                    : ""
+                }
+            </div>
+        `;
+      }
+
+      // Mode Membalas
+      function setReply(parentId, username) {
+        document.getElementById("activeParentId").value = parentId;
+        document.getElementById("replyingToBadge").style.display = "block";
+        document.getElementById(
+          "replyingToBadge"
+        ).innerHTML = `Membalas ke ${username} <span onclick="cancelReply()" style="cursor:pointer; color:red;">(x)</span>`;
+        document.getElementById("commentInput").focus();
+      }
+
+      function cancelReply() {
+        document.getElementById("activeParentId").value = "";
+        document.getElementById("replyingToBadge").style.display = "none";
+      }
+
+      // Kirim Komentar
+      async function sendComment() {
+        const tweetId = document.getElementById("activeTweetId").value;
+        const parentId =
+          document.getElementById("activeParentId").value || null;
+        const content = document.getElementById("commentInput").value;
+
+        if (!content) return;
+
+        await fetch("/api/comments/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.id,
+            tweet_id: tweetId,
+            content: content,
+            parent_id: parentId,
+          }),
+        });
+
+        document.getElementById("commentInput").value = "";
+        cancelReply();
+        loadComments(tweetId); // Refresh komentar
+      }
+
+      // (Logika Posting Tweet Tetap Sama)
+      async function posting() {
+        const content = document.getElementById("content").value;
+        const file = document.getElementById("fileInput").files[0];
+        const formData = new FormData();
+        formData.append("user_id", user.id);
+        formData.append("content", content);
+        if (file) formData.append("file", file);
+        const res = await fetch("/api/tweets/", {
+          method: "POST",
+          body: formData,
+        });
+        if (res.ok) {
+          document.getElementById("content").value = "";
+          document.getElementById("fileInput").value = "";
+          loadFeed();
+        } else {
+          alert("Gagal posting");
+        }
+      }
+
+      loadFeed();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Masuk | X-Ceria</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <i class="ri-bear-smile-fill logo"></i>
+        <h1>Selamat Datang!</h1>
+        <p>Masuk dulu yuk biar seru</p>
+        <br />
+        <input type="email" id="email" placeholder="Email Kamu" />
+        <input type="password" id="password" placeholder="Password Rahasia" />
+        <button onclick="login()" class="btn">MASUK YUK</button>
+        <br /><br />
+        <p>Belum punya akun? <a href="register.html">Daftar Sini</a></p>
+      </div>
+    </div>
+
+    <script>
+      async function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          window.location.href = "feed.html";
+        } else {
+          alert(data.pesan);
+        }
+      }
+    </script>
+  </body>
+</html>

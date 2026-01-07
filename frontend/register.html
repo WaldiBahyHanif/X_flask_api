@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Daftar | X-Ceria</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <i class="ri-user-smile-fill logo"></i>
+        <h1>Buat Akun Baru</h1>
+        <br />
+        <input type="text" id="fullname" placeholder="Nama Lengkap" />
+        <input type="text" id="username" placeholder="Username (tanpa spasi)" />
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button onclick="register()" class="btn">DAFTAR SEKARANG</button>
+        <br /><br />
+        <p>Sudah punya akun? <a href="index.html">Login Aja</a></p>
+      </div>
+    </div>
+
+    <script>
+      async function register() {
+        const data = {
+          full_name: document.getElementById("fullname").value,
+          username: document.getElementById("username").value,
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value,
+        };
+
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+          alert("Berhasil! Silakan login.");
+          window.location.href = "index.html";
+        } else {
+          alert(result.pesan);
+        }
+      }
+    </script>
+  </body>
+</html>
