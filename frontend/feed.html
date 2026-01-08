@@ -174,16 +174,14 @@
         return filename.match(/\.(mp4|mov|avi|wmv|flv|mkv)$/i);
       }
 
-      // --- 1. LOAD FEED (DENGAN LOGIKA LIKE BARU) ---
+      // --- 1. LOAD FEED ---
       async function loadFeed() {
-        // Kirim ID kita ke backend biar tau status like
         const res = await fetch(`/api/tweets/?my_id=${user.id}`);
         const result = await res.json();
         const list = document.getElementById("feedList");
         list.innerHTML = "";
 
         result.data.forEach((t) => {
-          // Cek Media (Video/Gambar)
           let mediaHtml = "";
           if (t.image_url) {
             mediaHtml = isVideo(t.image_url)
@@ -191,8 +189,6 @@
               : `<img src="${t.image_url}" style="width:100%; border-radius:10px; border:2px solid black; margin-top:10px;">`;
           }
 
-          // LOGIKA WARNA HATI
-          // Jika is_liked = true, pakai hati merah. Jika tidak, hati kosong.
           const heartIcon = t.is_liked ? "ri-heart-3-fill" : "ri-heart-3-line";
           const heartColor = t.is_liked ? "color:#ff4757;" : "color:black;";
 
@@ -224,7 +220,6 @@
             t.total_likes
           }
                     </span>
-                    
                     <span onclick="openComments(${
                       t.id
                     })" style="cursor:pointer; font-size:18px; font-weight:bold;">
@@ -237,19 +232,17 @@
         });
       }
 
-      // --- 2. LIKE POSTINGAN ---
       async function toggleLike(tweetId) {
         await fetch("/api/tweets/like", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_id: user.id, tweet_id: tweetId }),
         });
-        loadFeed(); // Refresh biar warnanya berubah
+        loadFeed();
       }
 
-      // --- 3. LOGIKA KOMENTAR ---
+      // --- 2. FITUR KOMENTAR ---
 
-      // Buka Popup
       async function openComments(tweetId) {
         document.getElementById("commentModal").style.display = "flex";
         document.getElementById("activeTweetId").value = tweetId;
@@ -259,10 +252,9 @@
 
       function closeModal() {
         document.getElementById("commentModal").style.display = "none";
-        loadFeed(); // Update angka komentar di luar saat ditutup
+        loadFeed();
       }
 
-      // Ambil & Susun Komentar
       async function loadComments(tweetId) {
         const list = document.getElementById("modalList");
         list.innerHTML = "Loading...";
@@ -279,32 +271,36 @@
           return;
         }
 
-        // FILTER: Pisahkan Induk dan Anak (Reply)
         const parents = result.data.filter(
           (c) => !c.parent_id || c.parent_id == 0
         );
 
         parents.forEach((parent) => {
-          // 1. Tampilkan Induk
-          list.innerHTML += renderHTML(parent, false);
-
-          // 2. Cari Anak-anaknya
+          list.innerHTML += renderHTML(parent, false); // Induk
           const replies = result.data.filter((c) => c.parent_id === parent.id);
           replies.forEach((reply) => {
-            // 3. Tampilkan Anak (Menjorok ke dalam)
-            list.innerHTML += renderHTML(reply, true);
+            list.innerHTML += renderHTML(reply, true); // Anak
           });
         });
       }
 
+      // FUNGSI RENDER KOMENTAR (UPDATE DISINI)
       function renderHTML(c, isReply) {
-        // Kalau Reply, kelas CSS-nya beda (reply-item)
         const cssClass = isReply ? "comment-item reply-item" : "comment-item";
+
+        // Cek: Apakah ini komentar SAYA? (username komentar == username login)
+        // Kalau iya, tampilkan tombol hapus (ikon sampah)
+        let deleteBtn = "";
+        if (c.username === user.username) {
+          deleteBtn = `<span onclick="deleteComment(${c.id})" style="cursor:pointer; color:red; margin-left:10px;" title="Hapus"><i class="ri-delete-bin-line"></i></span>`;
+        }
 
         return `
             <div class="${cssClass}">
                 <div style="display:flex; justify-content:space-between;">
-                    <strong>@${c.username}</strong>
+                    <div>
+                        <strong>@${c.username}</strong> ${deleteBtn}
+                    </div>
                     <small style="color:#888;">${new Date(
                       c.created_at
                     ).toLocaleDateString()}</small>
@@ -319,7 +315,22 @@
         `;
       }
 
-      // Mode Membalas
+      // FUNGSI HAPUS KOMENTAR BARU
+      async function deleteComment(commentId) {
+        if (!confirm("Hapus komentar ini?")) return;
+
+        const res = await fetch(`/api/comments/${commentId}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          // Refresh list komentar tanpa tutup modal
+          const tweetId = document.getElementById("activeTweetId").value;
+          loadComments(tweetId);
+        } else {
+          alert("Gagal menghapus");
+        }
+      }
+
       function setReply(parentId, username) {
         document.getElementById("activeParentId").value = parentId;
         document.getElementById("replyingToBadge").style.display = "block";
@@ -334,7 +345,6 @@
         document.getElementById("replyingToBadge").style.display = "none";
       }
 
-      // Kirim Komentar
       async function sendComment() {
         const tweetId = document.getElementById("activeTweetId").value;
         const parentId =
@@ -356,10 +366,9 @@
 
         document.getElementById("commentInput").value = "";
         cancelReply();
-        loadComments(tweetId); // Refresh komentar
+        loadComments(tweetId);
       }
 
-      // (Logika Posting Tweet Tetap Sama)
       async function posting() {
         const content = document.getElementById("content").value;
         const file = document.getElementById("fileInput").files[0];

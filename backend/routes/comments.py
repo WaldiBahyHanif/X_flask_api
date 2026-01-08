@@ -43,3 +43,20 @@ def post_comment():
     finally:
         cursor.close()
         conn.close()
+
+# --- 3. HAPUS KOMENTAR ---
+@comments_bp.route('/<int:comment_id>', methods=['DELETE'])
+def delete_comment(comment_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Hapus komentar berdasarkan ID
+        # (Opsional: Di aplikasi asli, cek dulu apakah ini punya user yang login)
+        cursor.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
+        conn.commit()
+        return jsonify({"status": "Sukses", "pesan": "Komentar dihapus"}), 200
+    except Exception as e:
+        return jsonify({"status": "Gagal", "pesan": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
