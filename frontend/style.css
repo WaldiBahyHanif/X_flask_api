@@ -326,3 +326,11 @@ a {
   cursor: pointer;
   font-weight: bold;
 }
+
+/* --- FITUR STICKY SIDEBAR (MENU DIAM SAAT SCROLL) --- */
+.main-layout aside {
+  position: sticky; /* Kuncinya disini: 'sticky' artinya nempel */
+  top: 20px; /* Jarak nempel dari atas layar browser */
+  height: fit-content; /* Penting! Tingginya menyesuaikan isi, jangan ikut panjang feed */
+  z-index: 10; /* Biar tidak tertutup elemen lain */
+}
