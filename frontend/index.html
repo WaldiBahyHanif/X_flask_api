@@ -38,7 +38,10 @@
         const data = await res.json();
 
         if (res.ok) {
+          // SIMPAN TOKEN & USER
+          localStorage.setItem("token", data.token); // <--- Simpan Token
           localStorage.setItem("user", JSON.stringify(data.user));
+
           window.location.href = "feed.html";
         } else {
           alert(data.pesan);

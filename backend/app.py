@@ -1,5 +1,6 @@
 from flask import Flask, send_from_directory
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 import os
 
 # Import Blueprints (Fitur-fitur yang sudah kita buat)
@@ -12,6 +13,9 @@ from routes.comments import comments_bp
 # Kita beri tahu Flask kalau folder HTML ada di '../frontend' (mundur satu langkah, lalu masuk frontend)
 app = Flask(__name__, static_folder='../frontend')
 CORS(app)
+
+app.config['JWT_SECRET_KEY'] = 'rahasia-super-ganteng-banget' # Ganti dengan kata acak yang rumit
+jwt = JWTManager(app)
 
 # Buat folder upload jika belum ada
 os.makedirs('static/uploads', exist_ok=True)
@@ -35,5 +39,5 @@ def buka_file(filename):
     return send_from_directory('../frontend', filename)
 
 if __name__ == '__main__':
-    print("✅ Server Berjalan! Klik link ini: http://127.0.0.1:5000")
+    print(" Server Berjalan! Klik link ini: http://127.0.0.1:5000")
     app.run(debug=True, port=5000)

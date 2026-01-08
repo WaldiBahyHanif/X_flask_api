@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token 
 from db import get_db_connection
 
 # Membuat Blueprint (Kelompok Rute)
@@ -41,14 +42,24 @@ def login():
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
-        if user and check_password_hash(user['password'], password):
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            # --- INI BAGIAN BARUNYA ---
+            # Kita buat token. Di dalam token kita selipkan ID user (identity)
+            access_token = create_access_token(identity=user['id'])
+            
             return jsonify({
                 "status": "Sukses",
-                "pesan": "Login berhasil!",
-                "user": {"id": user['id'], "username": user['username'], "full_name": user['full_name']}
+                "message": "Login berhasil",
+                "token": access_token,  # <--- Kirim Token
+                "user": {               # Data user tetap dikirim buat tampilan profil
+                    "id": user['id'],
+                    "username": user['username'],
+                    "full_name": user['full_name'],
+                    "email": user['email']
+                }
             }), 200
         else:
-            return jsonify({"status": "Gagal", "pesan": "Email atau Password salah!"}), 401
+            return jsonify({"status": "Gagal", "pesan": "Email atau password salah"}), 401
     finally:
         cursor.close()
         conn.close()
