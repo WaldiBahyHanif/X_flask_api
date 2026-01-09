@@ -1,11 +1,11 @@
-from flask import Blueprint, jsonify, request
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token 
+from flask import Blueprint, request, jsonify
 from db import get_db_connection
+# Kita pakai Werkzeug (Bawaan Flask) yang lebih simpel
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# Membuat Blueprint (Kelompok Rute)
 auth_bp = Blueprint('auth', __name__)
 
+# --- 1. REGISTRASI (DAFTAR) ---
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -14,22 +14,25 @@ def register():
     password = data.get('password')
     full_name = data.get('full_name')
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-        cursor.execute("SELECT * FROM users WHERE username = %s OR email = %s", (username, email))
-        if cursor.fetchone():
-            return jsonify({"status": "Gagal", "pesan": "Username/Email sudah terdaftar!"}), 400
+    # Hash Password pakai Werkzeug (Simpel & Aman)
+    hashed_pw = generate_password_hash(password)
 
-        hashed_pw = generate_password_hash(password)
-        cursor.execute("INSERT INTO users (username, email, password, full_name) VALUES (%s, %s, %s, %s)", 
-                       (username, email, hashed_pw, full_name))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO users (username, email, password, full_name) VALUES (%s, %s, %s, %s)",
+            (username, email, hashed_pw, full_name)
+        )
         conn.commit()
-        return jsonify({"status": "Sukses", "pesan": "Akun berhasil dibuat!"}), 201
+        return jsonify({"status": "Sukses", "pesan": "Registrasi berhasil!"}), 201
+    except Exception as e:
+        return jsonify({"status": "Gagal", "pesan": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
 
+# --- 2. LOGIN (MASUK) ---
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -42,16 +45,11 @@ def login():
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-            # --- INI BAGIAN BARUNYA ---
-            # Kita buat token. Di dalam token kita selipkan ID user (identity)
-            access_token = create_access_token(identity=user['id'])
-            
+        if user and check_password_hash(user['password'], password):
             return jsonify({
                 "status": "Sukses",
                 "message": "Login berhasil",
-                "token": access_token,  # <--- Kirim Token
-                "user": {               # Data user tetap dikirim buat tampilan profil
+                "user": {
                     "id": user['id'],
                     "username": user['username'],
                     "full_name": user['full_name'],

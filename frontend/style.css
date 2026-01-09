@@ -2,10 +2,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Poppins:wght@400;600&display=swap");
 
 :root {
-  --yellow: #f8c300; /* Kuning Saweria */
+  --yellow: #f8c300;
   --black: #2d2d2d; /* Hitam */
   --white: #ffffff;
-  --bg: #fffbf2; /* Cream Background */
+  --bg: #fffbf2;
   --border: 3px solid var(--black); /* Garis Tebal */
   --shadow: 4px 4px 0px var(--black); /* Bayangan Keras */
 }

@@ -398,14 +398,26 @@
       async function posting() {
         const content = document.getElementById("content").value;
         const file = document.getElementById("fileInput").files[0];
+
+        // Cek Login biasa
+        if (!user) {
+          alert("Kamu belum login!");
+          window.location.href = "index.html";
+          return;
+        }
+
         const formData = new FormData();
+        // --- PERUBAHAN DISINI: KIRIM ID USER MANUAL ---
         formData.append("user_id", user.id);
         formData.append("content", content);
         if (file) formData.append("file", file);
+
+        // Hapus Header Authorization
         const res = await fetch("/api/tweets/", {
           method: "POST",
-          body: formData,
+          body: formData, // Kirim form biasa tanpa header token
         });
+
         if (res.ok) {
           document.getElementById("content").value = "";
           document.getElementById("fileInput").value = "";
