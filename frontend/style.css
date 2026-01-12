@@ -334,3 +334,70 @@ a {
   height: fit-content; /* Penting! Tingginya menyesuaikan isi, jangan ikut panjang feed */
   z-index: 10; /* Biar tidak tertutup elemen lain */
 }
+
+/* Styling Area Input */
+.input-area {
+  padding: 15px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky; /* Supaya tetap di bawah */
+  bottom: 0;
+}
+
+/* Kotak Input Teks */
+#msgInput {
+  flex: 1; /* Mengisi sisa ruang */
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 25px; /* Membulat */
+  outline: none;
+  font-size: 15px;
+  background: #f9f9f9;
+  transition: 0.3s;
+}
+
+#msgInput:focus {
+  border-color: #f8c300; /* Warna kuning X-Ceria saat diklik */
+  background: white;
+}
+
+/* Tombol Kirim */
+.btn-send {
+  background: #f8c300;
+  color: black;
+  border: 2px solid black;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  transition: 0.2s;
+}
+
+.btn-send:hover {
+  transform: scale(1.1);
+  background: #ffdb4d;
+}
+
+.btn-send:active {
+  transform: scale(0.9);
+}
+
+/* Tombol Ikon Tambahan (Gambar/Emoji) */
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #f8c300;
+  cursor: pointer;
+  padding: 5px;
+}
+.btn-icon:hover {
+  color: #d4a600;
+}

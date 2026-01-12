@@ -30,26 +30,21 @@
           X-Ceria
         </div>
         <nav>
-          <a href="feed.html" class="menu-item">
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/2413/2413074.png"
-              class="menu-icon"
-            />
-            Beranda
+          <a href="feed.html" class="menu-item active">
+            <i class="ri-home-7-fill"></i>
+            <span>Beranda</span>
           </a>
           <a href="search.html" class="menu-item">
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/2909/2909565.png"
-              class="menu-icon"
-            />
-            Jelajah
+            <i class="ri-earth-line"></i>
+            <span>Jelajah</span>
           </a>
           <a href="profile.html" class="menu-item">
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"
-              class="menu-icon"
-            />
-            Profil
+            <i class="ri-user-3-line"></i>
+            <span>Profil</span>
+          </a>
+          <a href="chat.html" class="menu-item">
+            <i class="ri-message-3-line"></i>
+            <span>Pesan</span>
           </a>
         </nav>
         <button
@@ -64,11 +59,7 @@
             gap: 10px;
           "
         >
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/4034/4034229.png"
-            class="menu-icon"
-            style="width: 24px; height: 24px"
-          />
+          <i class="ri-logout-box-r-line"></i>
           Keluar
         </button>
       </aside>
@@ -167,82 +158,91 @@
     <script>
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) window.location.href = "index.html";
+
       function logout() {
         localStorage.removeItem("user");
         window.location.href = "index.html";
       }
+
       function isVideo(filename) {
         return filename.match(/\.(mp4|mov|avi|wmv|flv|mkv)$/i);
       }
 
       // --- 1. FITUR MENTION (UBAH TEKS JADI LINK BIRU) ---
       function formatMention(text) {
-        // Cari kata yang diawali @, lalu ubah jadi warna biru
         return text.replace(
           /@(\w+)/g,
           '<span style="color:#007bff; font-weight:bold; cursor:pointer;">@$1</span>'
         );
       }
 
-      // --- LOAD FEED (SAMA SEPERTI SEBELUMNYA) ---
+      // --- LOAD FEED ---
       async function loadFeed() {
-        const res = await fetch(`/api/tweets/?my_id=${user.id}`);
-        const result = await res.json();
-        const list = document.getElementById("feedList");
-        list.innerHTML = "";
+        try {
+          const res = await fetch(`/api/tweets/?my_id=${user.id}`);
+          const result = await res.json();
+          const list = document.getElementById("feedList");
+          list.innerHTML = "";
 
-        result.data.forEach((t) => {
-          let mediaHtml = "";
-          if (t.image_url) {
-            mediaHtml = isVideo(t.image_url)
-              ? `<video controls class="feed-video"><source src="${t.image_url}"></video>`
-              : `<img src="${t.image_url}" style="width:100%; border-radius:10px; border:2px solid black; margin-top:10px;">`;
-          }
+          if (!result.data) return; // Jaga-jaga kalau error
 
-          const heartIcon = t.is_liked ? "ri-heart-3-fill" : "ri-heart-3-line";
-          const heartColor = t.is_liked ? "color:#ff4757;" : "color:black;";
+          result.data.forEach((t) => {
+            let mediaHtml = "";
+            if (t.image_url) {
+              mediaHtml = isVideo(t.image_url)
+                ? `<video controls class="feed-video"><source src="${t.image_url}"></video>`
+                : `<img src="${t.image_url}" style="width:100%; border-radius:10px; border:2px solid black; margin-top:10px;">`;
+            }
 
-          // KONTEN FEED JUGA KITA FORMAT MENTION-NYA
-          const formattedContent = formatMention(t.content);
+            const heartIcon = t.is_liked
+              ? "ri-heart-3-fill"
+              : "ri-heart-3-line";
+            const heartColor = t.is_liked ? "color:#ff4757;" : "color:black;";
+            const formattedContent = formatMention(t.content);
 
-          list.innerHTML += `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between;">
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <div style="width:35px; height:35px; background:#f8c300; border-radius:50%; border:2px solid black; display:flex; justify-content:center; align-items:center;">
-                            <b>${t.username[0].toUpperCase()}</b>
+            list.innerHTML += `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <div style="width:35px; height:35px; background:#f8c300; border-radius:50%; border:2px solid black; display:flex; justify-content:center; align-items:center;">
+                                <b>${t.username[0].toUpperCase()}</b>
+                            </div>
+                            <div>
+                                <b>${t.full_name}</b>
+                                <small style="color:#888;">@${
+                                  t.username
+                                }</small>
+                            </div>
                         </div>
-                        <div>
-                            <b>${t.full_name}</b>
-                            <small style="color:#888;">@${t.username}</small>
-                        </div>
+                        <small>${new Date(
+                          t.created_at
+                        ).toLocaleDateString()}</small>
                     </div>
-                    <small>${new Date(
-                      t.created_at
-                    ).toLocaleDateString()}</small>
-                </div>
 
-                <p style="margin-top:10px; font-size:16px;">${formattedContent}</p>
-                ${mediaHtml}
+                    <p style="margin-top:10px; font-size:16px;">${formattedContent}</p>
+                    ${mediaHtml}
 
-                <div style="margin-top:15px; display:flex; gap:20px; border-top:2px dashed #eee; padding-top:10px;">
-                    <span onclick="toggleLike(${
-                      t.id
-                    })" style="cursor:pointer; font-size:18px; font-weight:bold; ${heartColor}">
-                        <i class="${heartIcon}" style="font-size:20px;"></i> ${
-            t.total_likes
-          }
-                    </span>
-                    <span onclick="openComments(${
-                      t.id
-                    })" style="cursor:pointer; font-size:18px; font-weight:bold;">
-                        <i class="ri-chat-3-line" style="font-size:20px;"></i> ${
-                          t.total_comments
-                        }
-                    </span>
-                </div>
-            </div>`;
-        });
+                    <div style="margin-top:15px; display:flex; gap:20px; border-top:2px dashed #eee; padding-top:10px;">
+                        <span onclick="toggleLike(${
+                          t.id
+                        })" style="cursor:pointer; font-size:18px; font-weight:bold; ${heartColor}">
+                            <i class="${heartIcon}" style="font-size:20px;"></i> ${
+              t.total_likes
+            }
+                        </span>
+                        <span onclick="openComments(${
+                          t.id
+                        })" style="cursor:pointer; font-size:18px; font-weight:bold;">
+                            <i class="ri-chat-3-line" style="font-size:20px;"></i> ${
+                              t.total_comments
+                            }
+                        </span>
+                    </div>
+                </div>`;
+          });
+        } catch (e) {
+          console.log(e);
+        }
       }
 
       async function toggleLike(tweetId) {
@@ -270,7 +270,6 @@
 
       async function loadComments(tweetId) {
         const list = document.getElementById("modalList");
-        // Kirim ID kita juga ke komentar biar tau status like komen
         const res = await fetch(`/api/comments/${tweetId}?my_id=${user.id}`);
         const result = await res.json();
 
@@ -295,20 +294,15 @@
         });
       }
 
-      // --- FUNGSI RENDER KOMENTAR BARU (ADA LIKE & MENTION) ---
       function renderHTML(c, isReply) {
         const cssClass = isReply ? "comment-item reply-item" : "comment-item";
-
-        // 1. Format Mention jadi Biru
         const contentFormatted = formatMention(c.content);
-
-        // 2. Tombol Hapus (Kalau punya kita)
         let deleteBtn = "";
+
         if (c.username === user.username) {
           deleteBtn = `<span onclick="deleteComment(${c.id})" style="cursor:pointer; color:red; margin-left:10px;" title="Hapus"><i class="ri-delete-bin-line"></i></span>`;
         }
 
-        // 3. Status Like Komentar
         const heartIcon = c.is_liked ? "ri-heart-fill" : "ri-heart-line";
         const heartColor = c.is_liked ? "color:red;" : "color:#888;";
 
@@ -340,15 +334,14 @@
         `;
       }
 
-      // --- FUNGSI LIKE KOMENTAR ---
       async function toggleCommentLike(commentId) {
-        const tweetId = document.getElementById("activeTweetId").value;
         await fetch("/api/comments/like", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_id: user.id, comment_id: commentId }),
         });
-        loadComments(tweetId); // Refresh popup komentar saja
+        const tweetId = document.getElementById("activeTweetId").value;
+        loadComments(tweetId);
       }
 
       async function deleteComment(commentId) {
@@ -362,7 +355,6 @@
         }
       }
 
-      // (Sisanya sama seperti sebelumnya...)
       function setReply(parentId, username) {
         document.getElementById("activeParentId").value = parentId;
         document.getElementById("replyingToBadge").style.display = "block";
@@ -371,16 +363,20 @@
         ).innerHTML = `Membalas ke ${username} <span onclick="cancelReply()" style="cursor:pointer; color:red;">(x)</span>`;
         document.getElementById("commentInput").focus();
       }
+
       function cancelReply() {
         document.getElementById("activeParentId").value = "";
         document.getElementById("replyingToBadge").style.display = "none";
       }
+
       async function sendComment() {
         const tweetId = document.getElementById("activeTweetId").value;
         const parentId =
           document.getElementById("activeParentId").value || null;
         const content = document.getElementById("commentInput").value;
+
         if (!content) return;
+
         await fetch("/api/comments/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -395,11 +391,11 @@
         cancelReply();
         loadComments(tweetId);
       }
+
       async function posting() {
         const content = document.getElementById("content").value;
         const file = document.getElementById("fileInput").files[0];
 
-        // Cek Login biasa
         if (!user) {
           alert("Kamu belum login!");
           window.location.href = "index.html";
@@ -407,15 +403,13 @@
         }
 
         const formData = new FormData();
-        // --- PERUBAHAN DISINI: KIRIM ID USER MANUAL ---
         formData.append("user_id", user.id);
         formData.append("content", content);
         if (file) formData.append("file", file);
 
-        // Hapus Header Authorization
         const res = await fetch("/api/tweets/", {
           method: "POST",
-          body: formData, // Kirim form biasa tanpa header token
+          body: formData,
         });
 
         if (res.ok) {
@@ -426,6 +420,7 @@
           alert("Gagal posting");
         }
       }
+
       loadFeed();
     </script>
   </body>

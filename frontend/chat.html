@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat | X-Ceria</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .chat-container {
+        display: flex;
+        height: 90vh;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 20px auto;
+      }
+      .user-list {
+        width: 30%;
+        background: white;
+        border: 3px solid #2d2d2d;
+        border-radius: 15px;
+        overflow-y: auto;
+      }
+      .chat-box {
+        width: 70%;
+        background: white;
+        border: 3px solid #2d2d2d;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+      }
+      .user-item {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .user-item:hover,
+      .user-item.active {
+        background: #fffbf2;
+      }
+      .chat-header {
+        padding: 15px;
+        border-bottom: 3px solid #2d2d2d;
+        background: #f8c300;
+        font-weight: bold;
+      }
+      .messages-area {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #fafafa;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .msg {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-size: 14px;
+        position: relative;
+      }
+      .msg-left {
+        align-self: flex-start;
+        background: #e0e0e0;
+        border: 2px solid #2d2d2d;
+      }
+      .msg-right {
+        align-self: flex-end;
+        background: #d1f7c4;
+        border: 2px solid #2d2d2d;
+      }
+      .input-area {
+        padding: 15px;
+        border-top: 3px solid #2d2d2d;
+        display: flex;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="user-list" id="userList">
+        <div style="padding: 15px; font-weight: bold">Orang di X-Ceria</div>
+      </div>
+
+      <div class="chat-box">
+    <div class="chat-header" id="chatHeader">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="ri-user-smile-line" style="font-size:24px;"></i>
+            <span id="chatTitle">Pilih teman untuk chat 👋</span>
+        </div>
+    </div>
+
+    <div class="messages-area" id="msgArea">
+        <div style="text-align:center; color:#888; margin-top:50px;">
+            <i class="ri-chat-smile-2-line" style="font-size:48px;"></i>
+            <p>Belum ada pesan terpilih</p>
+        </div>
+    </div>
+
+    <div class="input-area" id="inputArea" style="display:none;"> 
+        <button class="btn-icon"><i class="ri-image-add-line"></i></button>
+        <button class="btn-icon"><i class="ri-emotion-happy-line"></i></button>
+
+        <input type="text" id="msgInput" placeholder="Ketik pesan baru..." onkeypress="cekEnter(event)">
+        
+        <button onclick="kirimPesan()" class="btn-send">
+            <i class="ri-send-plane-fill"></i>
+        </button>
+    </div>
+    </div>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 10px">
+      <a href="feed.html">Kembali ke Beranda</a>
+    </div>
+
+    <script>
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) window.location.href = "index.html";
+
+      let activeReceiverId = null; // Siapa yang sedang kita chat?
+
+      // 1. KONEKSI KE SOCKET SERVER
+      const socket = io("http://127.0.0.1:5000");
+
+      socket.on("connect", () => {
+        console.log("Terhubung ke Socket!");
+        // Absen: "Saya User ID X sudah online"
+        socket.emit("join", { user_id: user.id });
+      });
+
+      // 2. MENDENGARKAN PESAN MASUK
+      socket.on("new_message", (data) => {
+        // Hanya tampilkan jika kita sedang chat dengan orang tersebut
+        // Atau jika itu pesan kita sendiri
+        if (activeReceiverId == data.sender_id || data.is_self) {
+          appendMessage(data.message, data.is_self ? "right" : "left");
+          scrollToBottom();
+        } else {
+          // Opsional: Bisa kasih notifikasi merah di nama user (Next Level)
+          alert("Ada pesan baru dari ID " + data.sender_id);
+        }
+      });
+
+      // 3. LOAD DAFTAR USER
+      async function loadUsers() {
+        const res = await fetch(`/api/users/all?my_id=${user.id}`);
+        const users = await res.json();
+        const list = document.getElementById("userList");
+
+        users.forEach((u) => {
+          list.innerHTML += `
+                <div class="user-item" onclick="startChat(${u.id}, '${u.username}')">
+                    <div style="width:40px; height:40px; background:#ccc; border-radius:50%; border:2px solid black;"></div>
+                    <div>
+                        <strong>${u.full_name}</strong><br>
+                        <small>@${u.username}</small>
+                    </div>
+                </div>
+            `;
+        });
+      }
+
+      // 4. BUKA RUANG CHAT
+      // Fungsi untuk mengirim pesan dengan tombol Enter
+function cekEnter(event) {
+    if (event.key === "Enter") {
+        kirimPesan();
+    }
+}
+
+async function startChat(receiverId, username) {
+    activeReceiverId = receiverId;
+    
+    // Update Header
+    document.getElementById('chatTitle').innerText = `Chat dengan @${username}`;
+    document.getElementById('chatTitle').style.fontWeight = "bold";
+    
+    // TAMPILKAN KOTAK INPUT (PENTING!)
+    document.getElementById('inputArea').style.display = "flex"; 
+
+    // Reset area pesan
+    document.getElementById('msgArea').innerHTML = "<p style='text-align:center'>Memuat percakapan...</p>";
+    
+    // ... kode fetch history ...
+    const res = await fetch(`/api/chat/history?user1=${user.id}&user2=${receiverId}`);
+    const msgs = await res.json();
+    
+    document.getElementById('msgArea').innerHTML = "";
+    if(msgs.length === 0) {
+        document.getElementById('msgArea').innerHTML = "<p style='text-align:center; color:#ccc; margin-top:20px;'>Belum ada pesan. Sapa duluan! 👋</p>";
+    }
+    
+    msgs.forEach(m => {
+        const position = (m.sender_id == user.id) ? 'right' : 'left';
+        appendMessage(m.message, position);
+    });
+    scrollToBottom();
+}
+      // 5. KIRIM PESAN
+      function kirimPesan() {
+        const input = document.getElementById("msgInput");
+        const text = input.value;
+        if (!text || !activeReceiverId) return;
+
+        // Kirim via Socket (Biar Realtime)
+        socket.emit("send_message", {
+          sender_id: user.id,
+          receiver_id: activeReceiverId,
+          message: text,
+        });
+
+        input.value = "";
+      }
+
+      function appendMessage(text, position) {
+        const div = document.createElement("div");
+        div.className = `msg msg-${position}`;
+        div.innerText = text;
+        document.getElementById("msgArea").appendChild(div);
+      }
+
+      function scrollToBottom() {
+        const area = document.getElementById("msgArea");
+        area.scrollTop = area.scrollHeight;
+      }
+
+      loadUsers();
+    </script>
+  </body>
+</html>
