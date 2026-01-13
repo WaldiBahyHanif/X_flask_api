@@ -401,3 +401,101 @@ a {
 .btn-icon:hover {
   color: #d4a600;
 }
+
+/* --- CSS KHUSUS HALAMAN PROFIL --- */
+/* --- CSS PROFIL GAYA SAWERIA (NEO-BRUTALISM) --- */
+
+.profile-header {
+  position: relative;
+  background: white;
+  /* Garis bawah tebal */
+  border-bottom: 3px solid black;
+  margin-bottom: 20px;
+}
+
+.banner {
+  height: 180px;
+  background: #f8c300; /* Kuning X-Ceria */
+  /* Garis batas banner */
+  border-bottom: 3px solid black;
+  background-image: radial-gradient(black 1px, transparent 1px);
+  background-size: 20px 20px; /* Efek titik-titik ala komik */
+  opacity: 0.8;
+}
+
+.profile-info-container {
+  padding: 15px 20px;
+  position: relative;
+}
+
+.profile-avatar-big {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  /* INI KUNCI GARIS HITAM DI FOTO */
+  border: 4px solid black;
+  background: #e1e8ed;
+  object-fit: cover;
+
+  position: absolute;
+  top: -70px; /* Menimpa banner */
+  left: 20px;
+
+  /* Bayangan tajam */
+  box-shadow: 5px 5px 0px black;
+  z-index: 10;
+}
+
+.edit-profile-btn {
+  float: right;
+  background: white;
+  font-weight: 800;
+  padding: 8px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+
+  /* GAYA TOMBOL SAWERIA */
+  border: 2px solid black;
+  box-shadow: 3px 3px 0px black;
+  transition: 0.1s;
+}
+
+.edit-profile-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px black;
+}
+
+.profile-name {
+  font-size: 24px;
+  font-weight: 900; /* Font sangat tebal */
+  margin: 0;
+  color: black;
+  text-shadow: 1px 1px 0px #eee;
+}
+
+/* Tab Postingan */
+.tab-active {
+  font-weight: 900;
+  border-bottom: 4px solid #f8c300;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+/* Style Modal Edit */
+.edit-input-group {
+  margin-bottom: 15px;
+}
+.edit-input-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.edit-input-group input,
+.edit-input-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #2d2d2d;
+  border-radius: 8px;
+  font-family: inherit;
+  box-sizing: border-box; /* Agar padding tidak merusak lebar */
+}

@@ -2,7 +2,7 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <title>Profil Saya | X-Ceria</title>
+    <title>Profil | X-Ceria</title>
     <link
       href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
       rel="stylesheet"
@@ -30,23 +30,18 @@
           X-Ceria
         </div>
         <nav>
-          <a href="feed.html" class="menu-item">
-            <i class="ri-home-7-line"></i>
-            <span>Beranda</span>
-          </a>
-          <a href="search.html" class="menu-item">
-            <i class="ri-earth-line"></i>
-            <span>Jelajah</span>
-          </a>
-          <a href="profile.html" class="menu-item active">
-            <i class="ri-user-3-fill"></i>
-            <span>Profil</span>
-          </a>
-
-          <a href="chat.html" class="menu-item">
-            <i class="ri-message-3-line"></i>
-            <span>Pesan</span>
-          </a>
+          <a href="feed.html" class="menu-item"
+            ><i class="ri-home-7-line"></i> <span>Beranda</span></a
+          >
+          <a href="search.html" class="menu-item"
+            ><i class="ri-earth-line"></i> <span>Jelajah</span></a
+          >
+          <a href="profile.html" class="menu-item active"
+            ><i class="ri-user-3-fill"></i> <span>Profil</span></a
+          >
+          <a href="chat.html" class="menu-item"
+            ><i class="ri-message-3-line"></i> <span>Pesan</span></a
+          >
         </nav>
         <button
           onclick="logout()"
@@ -60,174 +55,333 @@
             gap: 10px;
           "
         >
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/4034/4034229.png"
-            class="menu-icon"
-            style="width: 24px; height: 24px"
-          />
-          Keluar
+          <i class="ri-logout-box-r-line"></i> Keluar
         </button>
       </aside>
 
-      <main>
-        <div class="card" style="text-align: center">
-          <div
-            style="
-              width: 80px;
-              height: 80px;
-              background: #f8c300;
-              border-radius: 50%;
-              border: 3px solid black;
-              margin: 0 auto;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 40px;
-            "
-          >
-            <i class="ri-user-star-fill"></i>
-          </div>
-          <h2 style="margin-top: 10px" id="dispName">...</h2>
-          <p id="dispUser" style="color: #666">@...</p>
+      <main style="padding: 0">
+        <div class="profile-header">
+          <div class="banner"></div>
+          <div class="profile-info-container">
+            <img
+              id="profileAvatarBig"
+              src=""
+              class="profile-avatar-big"
+              alt="Avatar"
+            />
 
-          <div
-            style="
-              display: flex;
-              justify-content: center;
-              gap: 30px;
-              margin-top: 20px;
-              border-top: 2px dashed #ccc;
-              padding-top: 15px;
-            "
-          >
-            <div>
-              <b style="font-size: 20px" id="statPost">0</b><br />
-              <small>Postingan</small>
-            </div>
-            <div>
-              <b style="font-size: 20px" id="statFollower">0</b><br />
-              <small>Pengikut</small>
-            </div>
-            <div>
-              <b style="font-size: 20px" id="statFollowing">0</b><br />
-              <small>Mengikuti</small>
+            <button onclick="openEditModal()" class="edit-profile-btn">
+              Edit Profil
+            </button>
+
+            <div class="profile-details">
+              <h2 id="profileName" class="profile-name">Loading...</h2>
+              <p id="profileUsername" class="profile-username">@loading</p>
+
+              <p id="profileBio" class="profile-bio"></p>
+
+              <div class="profile-meta">
+                <span id="profileLocationBox" style="display: none">
+                  <i class="ri-map-pin-2-line"></i>
+                  <span id="profileLocation"></span>
+                </span>
+                <span>
+                  <i class="ri-calendar-line"></i> Bergabung
+                  <span id="profileJoinDate"></span>
+                </span>
+              </div>
+
+              <div class="follow-stats">
+                <span><strong id="followingCount">0</strong> Mengikuti</span>
+                <span><strong id="followersCount">0</strong> Pengikut</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <h3 style="margin-bottom: 15px">Postingan Saya</h3>
-        <div id="myPostList"></div>
+        <div
+          style="
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid #f8c300;
+            display: inline-block;
+            margin-left: 20px;
+          "
+        >
+          Postingan Saya
+        </div>
+
+        <div id="userFeedList" style="padding: 20px">
+          <p>Memuat postingan...</p>
+        </div>
       </main>
 
       <aside>
         <div class="saweria-widget">
-          <div class="trending-text">
-            <h3>INfoooo</h3>
-
-            <a href="#" class="trending-item">halaman ini</a>
-            <a href="#" class="trending-item">Tempat melihat akun</a>
-            <a href="#" class="trending-item">juga menghapus postingan</a>
-
-            <small
-              style="
-                display: block;
-                margin-top: 15px;
-                font-size: 12px;
-                opacity: 0.7;
-              "
-            >
-              Dibuat oleh Tim X-Ceria &copy; 2026
-            </small>
-          </div>
-
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/2395/2395804.png"
-            class="widget-mascot"
-            alt="Maskot"
-          />
+          <h3>Info</h3>
+          <p style="color: #666; font-size: 14px">
+            Halaman ini menampilkan profil lengkap kamu dan riwayat postingan.
+          </p>
         </div>
       </aside>
     </div>
 
+    <div id="editProfileModal" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Edit Profil</h3>
+          <button onclick="closeEditModal()" class="btn-close">X</button>
+        </div>
+        <div class="modal-body">
+          <div class="edit-input-group" style="text-align: center">
+            <label for="editAvatarInput" style="cursor: pointer">
+              <img
+                id="editAvatarPreview"
+                src=""
+                style="
+                  width: 80px;
+                  height: 80px;
+                  border-radius: 50%;
+                  border: 2px solid #2d2d2d;
+                  object-fit: cover;
+                "
+              />
+              <div
+                style="
+                  margin-top: 5px;
+                  color: #f8c300;
+                  font-weight: bold;
+                  font-size: 14px;
+                "
+              >
+                <i class="ri-camera-add-line"></i> Ganti Foto
+              </div>
+            </label>
+            <input
+              type="file"
+              id="editAvatarInput"
+              accept="image/*"
+              style="display: none"
+              onchange="previewNewAvatar(event)"
+            />
+          </div>
+
+          <div class="edit-input-group">
+            <label>Nama Lengkap</label>
+            <input
+              type="text"
+              id="editFullName"
+              disabled
+              style="background: #eee; color: #888"
+            />
+          </div>
+
+          <div class="edit-input-group">
+            <label for="editBio">Bio</label>
+            <textarea
+              id="editBio"
+              rows="3"
+              placeholder="Ceritakan tentang dirimu..."
+            ></textarea>
+          </div>
+
+          <div class="edit-input-group">
+            <label for="editLocation">Lokasi</label>
+            <input
+              type="text"
+              id="editLocation"
+              placeholder="Contoh: Jakarta"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="saveProfileChanges()" class="btn" id="saveBtn">
+            Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user) window.location.href = "index.html";
-      function logout() {
-        localStorage.removeItem("user");
-        window.location.href = "index.html";
+      const userLocal = JSON.parse(localStorage.getItem("user"));
+      if (!userLocal) window.location.href = "index.html";
+
+      let currentUserData = null;
+
+      // Fungsi Pintar Deteksi URL Gambar
+      // Fungsi ini memastikan gambar default muncul kalau user belum punya foto
+      function getAvatarUrl(url) {
+        if (!url || url === "null" || url === "") {
+          // Gambar kartun default
+          return "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+        }
+        // Jika URL dari internet (https://...) atau lokal (/static/...), pakai langsung
+        return url;
       }
 
-      document.getElementById("dispName").innerText = user.full_name;
-      document.getElementById("dispUser").innerText = "@" + user.username;
+      async function loadUserProfile() {
+        try {
+          const res = await fetch(`/api/users/${userLocal.id}`);
+          const userData = await res.json();
+          currentUserData = userData;
 
-      // --- FUNGSI PEMBANTU: CEK VIDEO ---
-      function isVideo(filename) {
-        return filename.match(/\.(mp4|mov|avi|wmv|flv|mkv)$/i);
-      }
+          // Isi Data HTML
+          document.getElementById("profileName").innerText = userData.full_name;
+          document.getElementById("profileUsername").innerText =
+            "@" + userData.username;
 
-      async function loadStats() {
-        const res = await fetch(`/api/users/stats/${user.id}`);
-        const data = await res.json();
-        if (res.ok) {
-          document.getElementById("statFollower").innerText = data.followers;
-          document.getElementById("statFollowing").innerText = data.following;
+          // Set Avatar
+          const finalAvatar = getAvatarUrl(userData.avatar_url);
+          document.getElementById("profileAvatarBig").src = finalAvatar;
+          document.getElementById("editAvatarPreview").src = finalAvatar;
+
+          // Bio & Lokasi
+          document.getElementById("profileBio").innerText =
+            userData.bio || "Belum ada bio.";
+          if (userData.location) {
+            document.getElementById("profileLocationBox").style.display =
+              "inline";
+            document.getElementById("profileLocation").innerText =
+              userData.location;
+          }
+
+          // Tanggal & Stats
+          const joinDate = new Date(userData.created_at);
+          document.getElementById("profileJoinDate").innerText =
+            joinDate.toLocaleDateString("id-ID", {
+              month: "long",
+              year: "numeric",
+            });
+          document.getElementById("followingCount").innerText =
+            userData.stats.following;
+          document.getElementById("followersCount").innerText =
+            userData.stats.followers;
+
+          // Load Tweet
+          loadUserTweets();
+        } catch (error) {
+          console.error("Gagal load profil:", error);
         }
       }
 
-      async function loadMyPosts() {
-        const res = await fetch("/api/tweets/");
-        const result = await res.json();
-        const list = document.getElementById("myPostList");
-
-        const myTweets = result.data.filter(
-          (t) => t.username === user.username
+      async function loadUserTweets() {
+        const list = document.getElementById("userFeedList");
+        const res = await fetch(
+          `/api/tweets/?user_id=${userLocal.id}&my_id=${userLocal.id}`
         );
-        document.getElementById("statPost").innerText = myTweets.length;
+        const result = await res.json();
 
         list.innerHTML = "";
-        if (myTweets.length === 0) {
-          list.innerHTML =
-            "<div class='card'><p align='center'>Belum ada postingan.</p></div>";
+        if (result.data.length === 0) {
+          list.innerHTML = "<p style='color:#777;'>Belum ada postingan.</p>";
           return;
         }
 
-        myTweets.forEach((t) => {
-          // LOGIKA BARU: Cek Gambar atau Video
+        result.data.forEach((t) => {
           let mediaHtml = "";
           if (t.image_url) {
-            if (isVideo(t.image_url)) {
-              mediaHtml = `
-                        <video controls class="feed-video">
-                            <source src="${t.image_url}" type="video/mp4">
-                        </video>`;
+            // Cek apakah video atau gambar
+            if (t.image_url.match(/\.(mp4|mov|avi)$/i)) {
+              mediaHtml = `<video controls class="feed-video" style="width:100%; border-radius:10px; margin-top:10px;"><source src="${t.image_url}"></video>`;
             } else {
               mediaHtml = `<img src="${t.image_url}" style="width:100%; border-radius:10px; border:2px solid black; margin-top:10px;">`;
             }
           }
 
           list.innerHTML += `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${t.full_name}</b>
-                    <button onclick="deletePost(${t.id})" style="background:red; color:white; border:2px solid black; cursor:pointer; border-radius:5px; padding:5px 10px;">Hapus</button>
-                </div>
-                <p style="margin-top:10px;">${t.content}</p>
-                ${mediaHtml}
-                <div style="margin-top:10px; color:#888;">
-                    <small><i class="ri-heart-3-fill"></i> ${t.total_likes} Likes</small>
-                </div>
-            </div>`;
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between;">
+                           <strong>${t.full_name}</strong>
+                           <small style="color:#888">${new Date(
+                             t.created_at
+                           ).toLocaleDateString()}</small>
+                        </div>
+                        <p style="margin-top:5px;">${t.content}</p>
+                        ${mediaHtml}
+                    </div>`;
         });
       }
 
-      async function deletePost(id) {
-        if (!confirm("Yakin hapus?")) return;
-        await fetch(`/api/tweets/${id}`, { method: "DELETE" });
-        loadMyPosts();
+      // --- MODAL & UPDATE ---
+      function openEditModal() {
+        if (!currentUserData) return;
+        document.getElementById("editFullName").value =
+          currentUserData.full_name;
+        document.getElementById("editBio").value = currentUserData.bio || "";
+        document.getElementById("editLocation").value =
+          currentUserData.location || "";
+        document.getElementById("editProfileModal").style.display = "flex";
       }
 
-      loadStats();
-      loadMyPosts();
+      function closeEditModal() {
+        document.getElementById("editProfileModal").style.display = "none";
+      }
+
+      function previewNewAvatar(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            document.getElementById("editAvatarPreview").src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      async function saveProfileChanges() {
+        const saveBtn = document.getElementById("saveBtn");
+        saveBtn.innerText = "Menyimpan...";
+        saveBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("user_id", userLocal.id);
+        formData.append("bio", document.getElementById("editBio").value);
+        formData.append(
+          "location",
+          document.getElementById("editLocation").value
+        );
+
+        const fileInput = document.getElementById("editAvatarInput");
+        if (fileInput.files[0]) {
+          formData.append("avatar", fileInput.files[0]);
+        }
+
+        try {
+          const res = await fetch("/api/users/update", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await res.json();
+
+          if (res.ok) {
+            // Update LocalStorage agar avatar di sidebar juga berubah
+            const updatedUser = {
+              ...userLocal,
+              avatar_url: result.user.avatar_url,
+            };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            closeEditModal();
+            loadUserProfile(); // Refresh halaman
+            alert("Profil berhasil diupdate!");
+          } else {
+            alert("Gagal: " + result.error);
+          }
+        } catch (e) {
+          console.error(e);
+          alert("Error jaringan");
+        } finally {
+          saveBtn.innerText = "Simpan";
+          saveBtn.disabled = false;
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "index.html";
+      }
+
+      loadUserProfile();
     </script>
   </body>
 </html>

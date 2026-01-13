@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
 from db import get_db_connection
 import os
-
+from flask import send_from_directory
 # Import Blueprints
 from routes.auth import auth_bp
 from routes.tweets import tweets_bp
@@ -13,6 +13,25 @@ from routes.comments import comments_bp
 app = Flask(__name__, static_folder='../frontend')
 app.config['SECRET_KEY'] = 'rahasia-donk' # Dibutuhkan untuk SocketIO
 CORS(app)
+
+# --- COPY KODE INI KE DALAM backend/app.py ---
+
+import os
+from flask import send_from_directory
+
+# ... (kode app = Flask, CORS, dll biarkan di atas) ...
+
+# ROUTE KHUSUS UNTUK GAMBAR
+# Ini memaksa Flask melayani file dari folder backend/static/uploads
+@app.route('/static/uploads/<path:filename>')
+def serve_image(filename):
+    # Ambil lokasi folder backend saat ini
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    # Gabungkan menjadi: .../backend/static/uploads
+    folder_path = os.path.join(root_dir, 'static', 'uploads')
+    return send_from_directory(folder_path, filename)
+
+# ... (lanjutkan ke kode register_blueprint di bawahnya) ...
 
 # --- 1. INISIALISASI SOCKET IO ---
 socketio = SocketIO(app, cors_allowed_origins="*")

@@ -1,80 +1,99 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
 from db import get_db_connection
+import os
+from werkzeug.utils import secure_filename
 
 users_bp = Blueprint('users', __name__)
 
-# --- 1. CARI USER (SEARCH) ---
-@users_bp.route('/search', methods=['GET'])
-def search_users():
-    keyword = request.args.get('q', '')
-    my_id = request.args.get('my_id') # ID kita, biar gak munculin diri sendiri
-    
+# --- PERBAIKAN LOKASI FOLDER (Sesuai Screenshot) ---
+# Mengambil lokasi absolut folder 'backend/static/uploads'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Pastikan folder ada
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# --- 1. API GET USER PROFILE ---
+@users_bp.route('/<int:user_id>', methods=['GET'])
+def get_user_profile(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    try:
-        # Cari user yang namanya mirip keyword, TAPI bukan diri sendiri
-        query = "SELECT id, username, full_name FROM users WHERE (username LIKE %s OR full_name LIKE %s) AND id != %s"
-        search_term = f"%{keyword}%"
-        cursor.execute(query, (search_term, search_term, my_id))
-        results = cursor.fetchall()
-        
-        # Cek status follow untuk setiap hasil pencarian
-        for user in results:
-            cursor.execute("SELECT * FROM follows WHERE follower_id = %s AND followed_id = %s", (my_id, user['id']))
-            is_following = cursor.fetchone()
-            user['is_followed'] = True if is_following else False
 
-        return jsonify({"status": "Sukses", "data": results}), 200
-    finally:
-        cursor.close()
+    cursor.execute("SELECT id, username, full_name, avatar_url, bio, location, created_at FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+
+    if not user:
         conn.close()
+        return jsonify({'error': 'User not found'}), 404
 
-# --- 2. FOLLOW / UNFOLLOW ---
-@users_bp.route('/follow', methods=['POST'])
-def toggle_follow():
-    data = request.json
-    follower_id = data.get('follower_id') # Kita
-    followed_id = data.get('followed_id') # Orang yang mau difollow
+    # Hitung Statistik
+    cursor.execute("SELECT COUNT(*) as count FROM follows WHERE followed_id = %s", (user_id,))
+    followers = cursor.fetchone()['count']
+
+    cursor.execute("SELECT COUNT(*) as count FROM follows WHERE follower_id = %s", (user_id,))
+    following = cursor.fetchone()['count']
+    
+    conn.close()
+
+    user['stats'] = {
+        'followers': followers,
+        'following': following
+    }
+    
+    return jsonify(user)
+
+# --- 2. API UPDATE PROFILE ---
+@users_bp.route('/update', methods=['POST'])
+def update_profile():
+    user_id = request.form.get('user_id')
+    bio = request.form.get('bio')
+    location = request.form.get('location')
+    file = request.files.get('avatar')
+
+    if not user_id:
+        return jsonify({'error': 'User ID required'}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    try:
-        # Cek apakah sudah follow?
-        cursor.execute("SELECT * FROM follows WHERE follower_id = %s AND followed_id = %s", (follower_id, followed_id))
-        existing = cursor.fetchone()
 
-        if existing:
-            cursor.execute("DELETE FROM follows WHERE follower_id = %s AND followed_id = %s", (follower_id, followed_id))
-            action = "unfollowed"
+    try:
+        # LOGIKA UPDATE GAMBAR
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            import time
+            unique_filename = f"{int(time.time())}_{filename}"
+            
+            # 1. Simpan file fisik ke backend/static/uploads/
+            file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+            file.save(file_path)
+            
+            # 2. Simpan URL browser ke database (Pakai /static/...)
+            db_avatar_url = f"/uploads/{unique_filename}"
+            
+            sql = "UPDATE users SET bio = %s, location = %s, avatar_url = %s WHERE id = %s"
+            cursor.execute(sql, (bio, location, db_avatar_url, user_id))
+        
         else:
-            cursor.execute("INSERT INTO follows (follower_id, followed_id) VALUES (%s, %s)", (follower_id, followed_id))
-            action = "followed"
-        
+            # Update teks saja
+            sql = "UPDATE users SET bio = %s, location = %s WHERE id = %s"
+            cursor.execute(sql, (bio, location, user_id))
+
         conn.commit()
-        return jsonify({"status": "Sukses", "action": action}), 200
-    finally:
-        cursor.close()
+        
+        # Ambil data terbaru untuk respon balik
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, username, full_name, avatar_url, bio, location FROM users WHERE id = %s", (user_id,))
+        updated_user = cursor.fetchone()
+        
         conn.close()
+        return jsonify({'message': 'Profile updated!', 'user': updated_user})
 
-# --- 3. STATISTIK PROFIL (Follower & Following) ---
-@users_bp.route('/stats/<int:user_id>', methods=['GET'])
-def get_stats(user_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        # Hitung Followers (Orang yang follow kita)
-        cursor.execute("SELECT COUNT(*) FROM follows WHERE followed_id = %s", (user_id,))
-        followers_count = cursor.fetchone()[0]
-
-        # Hitung Following (Orang yang kita follow)
-        cursor.execute("SELECT COUNT(*) FROM follows WHERE follower_id = %s", (user_id,))
-        following_count = cursor.fetchone()[0]
-
-        return jsonify({
-            "status": "Sukses", 
-            "followers": followers_count, 
-            "following": following_count
-        }), 200
-    finally:
-        cursor.close()
+    except Exception as e:
+        conn.rollback()
         conn.close()
+        print("Error Update:", e)
+        return jsonify({'error': str(e)}), 500
